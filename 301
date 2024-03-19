@@ -1,0 +1,4 @@
+<?php
+header("Location: https://slemanapps.slemankab.go.id/library/-/", true, 301);
+exit();
+?>
