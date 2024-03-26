@@ -1,0 +1,20 @@
+
+RewriteEngine on
+#php_value upload_max_filesize 10M
+#php_value post_max_size 50M
+#disable directory listing
+#Options -Indexes #optional, jika di cwp mungkin error, maka comment
+
+#AddHandler cgi-script *.php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi
+#Options -ExecCGI #optional, jika di cwp mungkin error, maka comment
+
+#disable php script execution >:-)
+<FilesMatch "\.(htpasswd|php|phps|php3|php4|php5|phtml|log|sh)$">
+	Order Allow,Deny
+	Deny from all
+</FilesMatch>
+
+
+
+#custom 403 error message
+ErrorDocument 403 '<h1 align="center">DILARANG! Aksi ini akan dicatat log sistem! <br> IP Anda : %{REMOTE_ADDR} <br> UA : %{HTTP_USER_AGENT}</h1>'
