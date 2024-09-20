@@ -1,4 +1,4 @@
 <?php
-header("Location: https://slemanapps.slemankab.go.id/library/-/", true, 301);
+header("Location: link tujuan", true, 301);
 exit();
 ?>
