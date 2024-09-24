@@ -1,4 +1,3 @@
-ÿØÿàQ 
 <?php
 /** Adminer - Compact database management
 * @link https://www.adminer.org/
