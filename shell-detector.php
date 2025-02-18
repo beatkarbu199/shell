@@ -2,7 +2,7 @@
 
 echo "<html><head><title>Backdoor Detector</title>";
 echo "<style>
-        body { background: url('skull-background.jpg') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
+        body { background: url('https://1.bp.blogspot.com/-txnCag9Z9jM/UuKj2FcKOSI/AAAAAAAAAuY/ExDFUIUMyk0/s1600/caveirapirataprataimagek.png') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
         table { width: 80%; margin: auto; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); color: white; }
         th, td { border: 1px solid white; padding: 10px; text-align: left; }
         th { background: darkred; }
