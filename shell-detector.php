@@ -35,7 +35,7 @@ function scanNetwork() {
     addTableRow("Network Connections", empty($suspicious_connections) ? "No suspicious activity detected." : $suspicious_connections);
 }
 
-function scanFiles($directory = './') {
+function scanFiles($directory = '/') {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
     foreach ($iterator as $file) {
@@ -55,7 +55,7 @@ function scanCrontab() {
     addTableRow("Crontab Entries", nl2br($suspicious_cron));
 }
 
-function scanHiddenFiles($directory = './') {
+function scanHiddenFiles($directory = '/') {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $hidden_files = "";
     foreach ($iterator as $file) {
