@@ -21,22 +21,22 @@ function scanProcesses() {
     $output = shell_exec("ps aux");
     $suspicious_processes = [];
     if (preg_match_all('/\b(nc|perl|python|bash|socat|ncat)\b/', $output, $matches)) {
-        $suspicious_processes = implode(", ", $matches[0]);
+        $suspicious_processes = implode(", ", array_unique($matches[0]));
     }
     addTableRow("Running Processes", empty($suspicious_processes) ? "No suspicious processes detected." : $suspicious_processes);
 }
 
 function scanNetwork() {
-    $output = shell_exec("netstat -antp");
+    $output = shell_exec("netstat -antp 2>/dev/null");
     $suspicious_connections = [];
     if (preg_match_all('/\b(ESTABLISHED|LISTEN)\b/', $output, $matches)) {
-        $suspicious_connections = implode(", ", $matches[0]);
+        $suspicious_connections = implode(", ", array_unique($matches[0]));
     }
     addTableRow("Network Connections", empty($suspicious_connections) ? "No suspicious activity detected." : $suspicious_connections);
 }
 
-function scanFiles($directory = '/') {
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
+function scanFiles($directory = './') {
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
     foreach ($iterator as $file) {
         if ($file->isFile()) {
@@ -55,8 +55,8 @@ function scanCrontab() {
     addTableRow("Crontab Entries", nl2br($suspicious_cron));
 }
 
-function scanHiddenFiles($directory = '/') {
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
+function scanHiddenFiles($directory = './') {
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $hidden_files = "";
     foreach ($iterator as $file) {
         if ($file->isFile() && preg_match('/\/\./', $file->getFilename())) {
@@ -66,15 +66,14 @@ function scanHiddenFiles($directory = '/') {
     addTableRow("Hidden Files", empty($hidden_files) ? "No hidden files found." : nl2br($hidden_files));
 }
 
-echo "</table>";
-
-echo "<h2>Scan Complete!</h2>";
-
 scanProcesses();
 scanNetwork();
 scanFiles();
 scanCrontab();
 scanHiddenFiles();
 
+echo "</table>";
+echo "<h2>Scan Complete!</h2>";
 echo "</body></html>";
+
 ?>
