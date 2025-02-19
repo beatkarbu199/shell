@@ -27,7 +27,7 @@ function scanFiles($directory) {
     }
     $allowed_extensions = ['php'];
     $malicious_patterns = '/(base64_decode|eval\(|gzinflate\(|str_rot13\(|shell_exec|system|passthru|exec|popen|proc_open|curl_exec|fsockopen|socket_create)/i';
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
+    $iterator = new DirectoryIterator($directory);
     $suspicious_files = "";
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
