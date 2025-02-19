@@ -36,13 +36,18 @@ function scanNetwork() {
 }
 
 function scanFiles($directory = '/') {
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
+    $directories = array_filter(glob($directory.'*'), 'is_dir');
+    array_unshift($directories, $directory);
+    
     $suspicious_files = "";
-    foreach ($iterator as $file) {
-        if ($file->isFile()) {
-            $content = file_get_contents($file->getPathname());
-            if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
-                $suspicious_files .= $file->getPathname() . "\n";
+    foreach ($directories as $dir) {
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $content = file_get_contents($file->getPathname());
+                if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
+                    $suspicious_files .= $file->getPathname() . "\n";
+                }
             }
         }
     }
@@ -56,11 +61,16 @@ function scanCrontab() {
 }
 
 function scanHiddenFiles($directory = '/') {
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
+    $directories = array_filter(glob($directory.'*'), 'is_dir');
+    array_unshift($directories, $directory);
+    
     $hidden_files = "";
-    foreach ($iterator as $file) {
-        if ($file->isFile() && preg_match('/\/\./', $file->getFilename())) {
-            $hidden_files .= $file->getPathname() . "\n";
+    foreach ($directories as $dir) {
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && preg_match('/\/\./', $file->getFilename())) {
+                $hidden_files .= $file->getPathname() . "\n";
+            }
         }
     }
     addTableRow("Hidden Files", empty($hidden_files) ? "No hidden files found." : nl2br($hidden_files));
