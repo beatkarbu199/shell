@@ -22,54 +22,25 @@ function addTableRow($category, $details) {
 
 function scanFiles($directory) {
     if (!is_dir($directory)) {
-        addTableRow("Error", "Invalid directory: $directory");
+        addTableRow("Suspicious Files", "Invalid directory: $directory");
         return;
     }
-
     $allowed_extensions = ['php'];
-
-    // Whitelist pikeun CMS séjén (Joomla, Drupal, Prestashop, Opencart, dll)
-    $whitelist = [
-        'index.php', 'configuration.php', 'config.php', 'settings.php',
-        'wp-load.php', 'wp-cron.php', 'wp-config.php',
-        'default.php', 'router.php', 'functions.php'
-    ];
-
-    // Pola deteksi backdoor umum pikeun sagala CMS
-    $backdoor_patterns = [
-        '/(base64_decode|eval|exec|shell_exec|system|passthru|popen|proc_open|fsockopen|curl_exec|socket_create).*(base64_decode|eval|exec|shell_exec|system|passthru|popen|proc_open|fsockopen|curl_exec|socket_create)/i',
-        '/gzinflate\s*\(/i', 
-        '/str_rot13\s*\(/i',
-        '/pack\s*\(/i',
-        '/assert\s*\(/i'
-    ];
-
+    $malicious_patterns = '/(base64_decode|eval\(|gzinflate\(|str_rot13\(|shell_exec|system|passthru|exec|popen|proc_open|curl_exec|fsockopen|socket_create)/i';
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
-
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
             $ext = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
-            $filename = basename($file->getPathname());
-
-            // Lewatkeun file whitelisted
-            if (in_array($filename, $whitelist)) {
-                continue;
-            }
-
             if (in_array($ext, $allowed_extensions)) {
                 $content = file_get_contents($file->getPathname());
-                foreach ($backdoor_patterns as $pattern) {
-                    if (preg_match($pattern, $content)) {
-                        $suspicious_files .= $file->getPathname() . "\n";
-                        break;
-                    }
+                if (preg_match($malicious_patterns, $content)) {
+                    $suspicious_files .= $file->getPathname() . "\n";
                 }
             }
         }
     }
-
-    addTableRow("Detected Backdoors", empty($suspicious_files) ? "No suspicious files found." : nl2br($suspicious_files));
+    addTableRow("Suspicious Files", empty($suspicious_files) ? "No suspicious files found." : nl2br($suspicious_files));
 }
 
 $scanDir = isset($_GET['dir']) ? realpath($_GET['dir']) : $_SERVER['DOCUMENT_ROOT'];
