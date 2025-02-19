@@ -89,9 +89,9 @@ function scanHiddenFiles($directory) {
     addTableRow("Hidden Files", empty($hidden_files) ? "No hidden files found." : nl2br($hidden_files));
 }
 
-$scanDir = isset($_GET['dir']) ? realpath($_GET['dir']) : getcwd();
+$scanDir = isset($_GET['dir']) ? realpath($_GET['dir']) : $_SERVER['DOCUMENT_ROOT'];
 if ($scanDir === false || !is_dir($scanDir)) {
-    $scanDir = getcwd();
+    $scanDir = $_SERVER['DOCUMENT_ROOT'];
 }
 
 echo "<h3>Scanning Directory: $scanDir</h3>";
