@@ -1,24 +1,31 @@
 <?php
 
-echo "<html><head><title>Backdoor Detector</title>";
-echo "<style>
-        body { background: url('https://1.bp.blogspot.com/-txnCag9Z9jM/UuKj2FcKOSI/AAAAAAAAAuY/ExDFUIUMyk0/s1600/caveirapirataprataimagek.png') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
-        table { width: 80%; margin: auto; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); color: white; }
-        th, td { border: 1px solid white; padding: 10px; text-align: left; }
-        th { background: darkred; }
-        h2 { text-align: center; color: red; }
-    </style></head><body>";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-echo "<h2>Backdoor Detector - Scan Results</h2>";
-
-echo "<table><tr><th>Category</th><th>Details</th></tr>";
+if (php_sapi_name() !== 'cli') {
+    echo "<html><head><title>Backdoor Detector</title>";
+    echo "<style>
+            body { background: url('https://1.bp.blogspot.com/-txnCag9Z9jM/UuKj2FcKOSI/AAAAAAAAAuY/ExDFUIUMyk0/s1600/caveirapirataprataimagek.png') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
+            table { width: 80%; margin: auto; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); color: white; }
+            th, td { border: 1px solid white; padding: 10px; text-align: left; }
+            th { background: darkred; }
+            h2 { text-align: center; color: red; }
+        </style></head><body>";
+    echo "<h2>Backdoor Detector - Scan Results</h2>";
+    echo "<table><tr><th>Category</th><th>Details</th></tr>";
+}
 
 function addTableRow($category, $details) {
     echo "<tr><td>$category</td><td><pre>$details</pre></td></tr>";
 }
 
 function scanProcesses() {
-    $output = shell_exec("ps aux");
+    $output = shell_exec("ps aux 2>&1");
+    if ($output === null) {
+        addTableRow("Running Processes", "Error executing command");
+        return;
+    }
     $suspicious_processes = [];
     if (preg_match_all('/\b(nc|perl|python|bash|socat|ncat)\b/', $output, $matches)) {
         $suspicious_processes = implode(", ", array_unique($matches[0]));
@@ -27,7 +34,11 @@ function scanProcesses() {
 }
 
 function scanNetwork() {
-    $output = shell_exec("netstat -antp 2>/dev/null");
+    $output = shell_exec("netstat -antp 2>&1");
+    if ($output === null) {
+        addTableRow("Network Connections", "Error executing command");
+        return;
+    }
     $suspicious_connections = [];
     if (preg_match_all('/\b(ESTABLISHED|LISTEN)\b/', $output, $matches)) {
         $suspicious_connections = implode(", ", array_unique($matches[0]));
@@ -36,10 +47,14 @@ function scanNetwork() {
 }
 
 function scanFiles($directory) {
+    if (!is_dir($directory)) {
+        addTableRow("Suspicious Files", "Invalid directory: $directory");
+        return;
+    }
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
     foreach ($iterator as $file) {
-        if ($file->isFile()) {
+        if ($file->isFile() && is_readable($file->getPathname())) {
             $content = file_get_contents($file->getPathname());
             if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
                 $suspicious_files .= $file->getPathname() . "\n";
@@ -50,12 +65,20 @@ function scanFiles($directory) {
 }
 
 function scanCrontab() {
-    $output = shell_exec("crontab -l 2>/dev/null");
+    $output = shell_exec("crontab -l 2>&1");
+    if ($output === null) {
+        addTableRow("Crontab Entries", "Error executing command");
+        return;
+    }
     $suspicious_cron = preg_match('/(nc|bash|perl|python|php|sh)\s.*\s(>/dev/null|&>/dev/null)/', $output) ? $output : "No suspicious entries found.";
     addTableRow("Crontab Entries", nl2br($suspicious_cron));
 }
 
 function scanHiddenFiles($directory) {
+    if (!is_dir($directory)) {
+        addTableRow("Hidden Files", "Invalid directory: $directory");
+        return;
+    }
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $hidden_files = "";
     foreach ($iterator as $file) {
@@ -77,6 +100,6 @@ scanHiddenFiles($scanDir);
 
 echo "</table>";
 echo "<h2>Scan Complete!</h2>";
-echo "</body></html>";
 
+echo "</body></html>";
 ?>
