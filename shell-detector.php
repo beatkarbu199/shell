@@ -27,7 +27,7 @@ function scanProcesses() {
         return;
     }
     $suspicious_processes = [];
-    if (preg_match_all('/\b(nc|perl|python|bash|socat|ncat)\b/', $output, $matches)) {
+    if (preg_match_all('/\\b(nc|perl|python|bash|socat|ncat)\\b/', $output, $matches)) {
         $suspicious_processes = implode(", ", array_unique($matches[0]));
     }
     addTableRow("Running Processes", empty($suspicious_processes) ? "No suspicious processes detected." : $suspicious_processes);
@@ -40,7 +40,7 @@ function scanNetwork() {
         return;
     }
     $suspicious_connections = [];
-    if (preg_match_all('/\b(ESTABLISHED|LISTEN)\b/', $output, $matches)) {
+    if (preg_match_all('/\\b(ESTABLISHED|LISTEN)\\b/', $output, $matches)) {
         $suspicious_connections = implode(", ", array_unique($matches[0]));
     }
     addTableRow("Network Connections", empty($suspicious_connections) ? "No suspicious activity detected." : $suspicious_connections);
@@ -56,7 +56,7 @@ function scanFiles($directory) {
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
             $content = file_get_contents($file->getPathname());
-            if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
+            if (preg_match('/(base64_decode|eval\\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
                 $suspicious_files .= $file->getPathname() . "\n";
             }
         }
@@ -70,7 +70,7 @@ function scanCrontab() {
         addTableRow("Crontab Entries", "Error executing command");
         return;
     }
-    $suspicious_cron = preg_match('/(nc|bash|perl|python|php|sh)\s.*\s(>/dev/null|&>/dev/null)/', $output) ? $output : "No suspicious entries found.";
+    $suspicious_cron = preg_match('/(nc|bash|perl|python|php|sh)\\s.*\\s(>\/dev\/null|&>\/dev\/null)/', $output) ? $output : "No suspicious entries found.";
     addTableRow("Crontab Entries", nl2br($suspicious_cron));
 }
 
@@ -82,7 +82,7 @@ function scanHiddenFiles($directory) {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $hidden_files = "";
     foreach ($iterator as $file) {
-        if ($file->isFile() && strpos($file->getFilename(), '.') === 0) {
+        if ($file->isFile() && substr($file->getFilename(), 0, 1) === '.') {
             $hidden_files .= $file->getPathname() . "\n";
         }
     }
