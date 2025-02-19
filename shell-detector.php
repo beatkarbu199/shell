@@ -35,19 +35,14 @@ function scanNetwork() {
     addTableRow("Network Connections", empty($suspicious_connections) ? "No suspicious activity detected." : $suspicious_connections);
 }
 
-function scanFiles($directory = '/') {
-    $directories = array_filter(glob($directory.'*'), 'is_dir');
-    array_unshift($directories, $directory);
-    
+function scanFiles($directory) {
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
-    foreach ($directories as $dir) {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $content = file_get_contents($file->getPathname());
-                if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
-                    $suspicious_files .= $file->getPathname() . "\n";
-                }
+    foreach ($iterator as $file) {
+        if ($file->isFile()) {
+            $content = file_get_contents($file->getPathname());
+            if (preg_match('/(base64_decode|eval\(|xor|ROT13|crypt|AES|Blowfish)/', $content)) {
+                $suspicious_files .= $file->getPathname() . "\n";
             }
         }
     }
@@ -60,27 +55,25 @@ function scanCrontab() {
     addTableRow("Crontab Entries", nl2br($suspicious_cron));
 }
 
-function scanHiddenFiles($directory = '/') {
-    $directories = array_filter(glob($directory.'*'), 'is_dir');
-    array_unshift($directories, $directory);
-    
+function scanHiddenFiles($directory) {
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $hidden_files = "";
-    foreach ($directories as $dir) {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
-        foreach ($iterator as $file) {
-            if ($file->isFile() && preg_match('/\/\./', $file->getFilename())) {
-                $hidden_files .= $file->getPathname() . "\n";
-            }
+    foreach ($iterator as $file) {
+        if ($file->isFile() && strpos($file->getFilename(), '.') === 0) {
+            $hidden_files .= $file->getPathname() . "\n";
         }
     }
     addTableRow("Hidden Files", empty($hidden_files) ? "No hidden files found." : nl2br($hidden_files));
 }
 
+$scanDir = isset($_GET['dir']) ? $_GET['dir'] : '/';
+echo "<h3>Scanning Directory: $scanDir</h3>";
+
 scanProcesses();
 scanNetwork();
-scanFiles();
+scanFiles($scanDir);
 scanCrontab();
-scanHiddenFiles();
+scanHiddenFiles($scanDir);
 
 echo "</table>";
 echo "<h2>Scan Complete!</h2>";
