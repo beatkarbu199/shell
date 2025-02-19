@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 if (php_sapi_name() !== 'cli') {
     echo "<html><head><title>Backdoor Detector</title>";
     echo "<style>
-            body { background: url('https://1.bp.blogspot.com/-txnCag9Z9jM/UuKj2FcKOSI/AAAAAAAAAuY/ExDFUIUMyk0/s1600/caveirapirataprataimagek.png') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
+            body { background: url('https://c4.wallpaperflare.com/wallpaper/898/294/539/call-of-duty-call-of-duty-modern-warfare-2-illustration-digital-art-4k-hd-wallpaper-preview.jpg') no-repeat center center fixed; background-size: cover; color: white; font-family: Arial, sans-serif; }
             table { width: 80%; margin: auto; border-collapse: collapse; background: rgba(0, 0, 0, 0.8); color: white; }
             th, td { border: 1px solid white; padding: 10px; text-align: left; }
             th { background: darkred; }
