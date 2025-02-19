@@ -20,32 +20,6 @@ function addTableRow($category, $details) {
     echo "<tr><td>$category</td><td><pre>$details</pre></td></tr>";
 }
 
-function scanProcesses() {
-    $output = shell_exec("ps aux 2>&1");
-    if ($output === null) {
-        addTableRow("Running Processes", "Error executing command");
-        return;
-    }
-    $suspicious_processes = [];
-    if (preg_match_all('/\\b(nc|perl|python|bash|socat|ncat)\\b/i', $output, $matches)) {
-        $suspicious_processes = implode(", ", array_unique($matches[0]));
-    }
-    addTableRow("Running Processes", empty($suspicious_processes) ? "No suspicious processes detected." : $suspicious_processes);
-}
-
-function scanNetwork() {
-    $output = shell_exec("netstat -antp 2>&1");
-    if ($output === null) {
-        addTableRow("Network Connections", "Error executing command");
-        return;
-    }
-    $suspicious_connections = [];
-    if (preg_match_all('/\\b(ESTABLISHED|LISTEN)\\b/i', $output, $matches)) {
-        $suspicious_connections = implode(", ", array_unique($matches[0]));
-    }
-    addTableRow("Network Connections", empty($suspicious_connections) ? "No suspicious activity detected." : $suspicious_connections);
-}
-
 function scanFiles($directory) {
     if (!is_dir($directory)) {
         addTableRow("Suspicious Files", "Invalid directory: $directory");
@@ -56,37 +30,12 @@ function scanFiles($directory) {
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
             $content = file_get_contents($file->getPathname());
-            if (preg_match('/(base64_decode|eval\\(|xor|ROT13|crypt|AES|Blowfish)/i', $content)) {
+            if (preg_match('/(base64_decode|eval\(|shell_exec|system|passthru|exec|popen|proc_open|curl_exec|file_get_contents|fsockopen|socket_create)/i', $content)) {
                 $suspicious_files .= $file->getPathname() . "\n";
             }
         }
     }
     addTableRow("Suspicious Files", empty($suspicious_files) ? "No suspicious files found." : nl2br($suspicious_files));
-}
-
-function scanCrontab() {
-    $output = shell_exec("crontab -l 2>&1");
-    if ($output === null) {
-        addTableRow("Crontab Entries", "Error executing command");
-        return;
-    }
-    $suspicious_cron = preg_match('/(nc|bash|perl|python|php|sh)\\s.*\\s(>\/dev\/null|&>\/dev\/null)/i', $output) ? $output : "No suspicious entries found.";
-    addTableRow("Crontab Entries", nl2br($suspicious_cron));
-}
-
-function scanHiddenFiles($directory) {
-    if (!is_dir($directory)) {
-        addTableRow("Hidden Files", "Invalid directory: $directory");
-        return;
-    }
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
-    $hidden_files = "";
-    foreach ($iterator as $file) {
-        if ($file->isFile() && substr($file->getFilename(), 0, 1) === '.') {
-            $hidden_files .= $file->getPathname() . "\n";
-        }
-    }
-    addTableRow("Hidden Files", empty($hidden_files) ? "No hidden files found." : nl2br($hidden_files));
 }
 
 $scanDir = isset($_GET['dir']) ? realpath($_GET['dir']) : $_SERVER['DOCUMENT_ROOT'];
@@ -96,11 +45,7 @@ if ($scanDir === false || !is_dir($scanDir)) {
 
 echo "<h3>Scanning Directory: $scanDir</h3>";
 
-scanProcesses();
-scanNetwork();
 scanFiles($scanDir);
-scanCrontab();
-scanHiddenFiles($scanDir);
 
 echo "</table>";
 echo "<h2>Scan Complete!</h2>";
