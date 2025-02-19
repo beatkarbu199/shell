@@ -27,20 +27,19 @@ function scanFiles($directory) {
     }
 
     $allowed_extensions = ['php'];
+
+    // Whitelist pikeun CMS séjén (Joomla, Drupal, Prestashop, Opencart, dll)
+    $whitelist = [
+        'index.php', 'configuration.php', 'config.php', 'settings.php',
+        'wp-load.php', 'wp-cron.php', 'wp-config.php',
+        'default.php', 'router.php', 'functions.php'
+    ];
+
+    // Pola deteksi backdoor umum pikeun sagala CMS
     $backdoor_patterns = [
-        '/base64_decode\s*\(/i',  // Deteksi encoding mencurigakan
-        '/eval\s*\(/i',           // Eval sering dipakai di backdoor
-        '/shell_exec\s*\(/i',
-        '/system\s*\(/i',
-        '/passthru\s*\(/i',
-        '/exec\s*\(/i',
-        '/popen\s*\(/i',
-        '/proc_open\s*\(/i',
-        '/curl_exec\s*\(/i',
-        '/fsockopen\s*\(/i',
-        '/socket_create\s*\(/i',
-        '/gzinflate\s*\(/i',      // Deteksi backdoor yang dikompresi
-        '/str_rot13\s*\(/i',      // Deteksi encoding sederhana
+        '/(base64_decode|eval|exec|shell_exec|system|passthru|popen|proc_open|fsockopen|curl_exec|socket_create).*(base64_decode|eval|exec|shell_exec|system|passthru|popen|proc_open|fsockopen|curl_exec|socket_create)/i',
+        '/gzinflate\s*\(/i', 
+        '/str_rot13\s*\(/i',
         '/pack\s*\(/i',
         '/assert\s*\(/i'
     ];
@@ -51,6 +50,13 @@ function scanFiles($directory) {
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
             $ext = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
+            $filename = basename($file->getPathname());
+
+            // Lewatkeun file whitelisted
+            if (in_array($filename, $whitelist)) {
+                continue;
+            }
+
             if (in_array($ext, $allowed_extensions)) {
                 $content = file_get_contents($file->getPathname());
                 foreach ($backdoor_patterns as $pattern) {
