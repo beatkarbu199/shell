@@ -25,13 +25,18 @@ function scanFiles($directory) {
         addTableRow("Suspicious Files", "Invalid directory: $directory");
         return;
     }
+    $allowed_extensions = ['php'];
+    $malicious_patterns = '/(base64_decode|eval\(|shell_exec|system|passthru|exec|popen|proc_open|curl_exec|fsockopen|socket_create)/i';
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     $suspicious_files = "";
     foreach ($iterator as $file) {
         if ($file->isFile() && is_readable($file->getPathname())) {
-            $content = file_get_contents($file->getPathname());
-            if (preg_match('/(base64_decode|eval\(|shell_exec|system|passthru|exec|popen|proc_open|curl_exec|file_get_contents|fsockopen|socket_create)/i', $content)) {
-                $suspicious_files .= $file->getPathname() . "\n";
+            $ext = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
+            if (in_array($ext, $allowed_extensions)) {
+                $content = file_get_contents($file->getPathname());
+                if (preg_match($malicious_patterns, $content)) {
+                    $suspicious_files .= $file->getPathname() . "\n";
+                }
             }
         }
     }
